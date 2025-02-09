@@ -17,10 +17,11 @@ header {
 
 main {
     position: relative;
+    z-index: 10;
 }
 
 .login-form-container {
-    /* display: none; */
+    background: #f3f7fcee;
 }
 
 .pane.secondary {
