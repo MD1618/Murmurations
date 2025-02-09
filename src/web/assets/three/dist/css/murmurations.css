@@ -21,7 +21,7 @@ main {
 }
 
 .login-form-container {
-    background: #f3f7fcee;
+    background-color: #f3f7fcee !important;
 }
 
 .pane.secondary {
