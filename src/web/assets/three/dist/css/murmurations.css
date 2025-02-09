@@ -1,0 +1,40 @@
+#murmurations-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.login-container {
+    z-index: 10;
+}
+
+header {
+    z-index: 10;
+}
+
+main {
+    position: relative;
+}
+
+.login-form-container {
+    /* display: none; */
+}
+
+    .pane.secondary {
+        background: #f3f7fcee;
+    }
+
+#canvas-cover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    background-color: #e4edf6;
+    opacity: 0;
+    transition: opacity 2.5s ease-in-out;
+}
