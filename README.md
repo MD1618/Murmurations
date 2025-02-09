@@ -1,6 +1,6 @@
 # Murmurations
 
-A Craft CMS plugin to upgrade the boring login screen with an interactive murmuration of birds.
+A Craft CMS plugin to upgrade the boring login screen with an interactive murmuration of birds 🐦
 
 <img src="./docs/resources/murmurations.png">
 
@@ -13,7 +13,7 @@ https://github.com/mrdoob/three.js/blob/master/examples/webgpu_compute_birds.htm
 The main contributor is:
 https://github.com/cmhhelgeson
 
-Nice work, Christian Helgeson!
+Very nice work, Christian Helgeson! 🙌
 
 # Description
 
@@ -39,6 +39,19 @@ Plugin store installation to be added when it gets completed.
 
 Open your terminal and run the following commands:
 
+First add the repository to your composer.json file:
+
+```json
+"repositories": [
+    {
+        "type": "vcs",
+        "url": "https://github.com/MD1618/Murmurations"
+    }
+]
+```
+
+Then run the following commands:
+
 ```bash
 # go to the project directory
 cd /path/to/my-project.test
@@ -49,3 +62,13 @@ composer require martin-drahony/craft-murmurations
 # tell Craft to install the plugin
 ./craft plugin/install murmurations
 ```
+
+## Report Issues
+
+Please report any issues you find ❤️
+
+[GitHub Issues](https://github.com/MD1618/Murmurations/issues)
+
+## License
+
+This plugin is licensed for free under the MIT License.
