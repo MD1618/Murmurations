@@ -96,11 +96,7 @@ function init() {
 
     container = document.createElement('div');
     container.setAttribute('id', 'murmurations-canvas');
-    const coverEl = document.createElement('div');
-    coverEl.setAttribute('id', 'canvas-cover');
-    const mainElement = document.querySelector('main');
-    container.appendChild(coverEl);
-    mainElement.appendChild(container);
+    document.body.appendChild(container);
 
     camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 5000);
     camera.position.z = 1000;
