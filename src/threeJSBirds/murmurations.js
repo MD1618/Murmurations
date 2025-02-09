@@ -12,6 +12,9 @@ let pointer;
 const BIRDS = 2000;
 const SPEED_LIMIT = 9.0;
 
+// detect if browser is firefox
+
+const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
 
 
@@ -335,10 +338,12 @@ function init() {
 
         });
 
+        const centerPull = isFirefox ? float(3.0) : float(6.0);
+
         // Attract flocks to center
         const dirToCenter = position.toVar();
         dirToCenter.y.mulAssign(3.5);
-        velocity.subAssign(normalize(dirToCenter).mul(deltaTime).mul(6.0));
+        velocity.subAssign(normalize(dirToCenter).mul(deltaTime).mul(centerPull));
 
         Loop({ start: uint(0), end: uint(BIRDS), type: 'uint', condition: '<' }, ({ i }) => {
 
