@@ -1,6 +1,6 @@
 # Murmurations
 
-A Craft CMS plugin to upgrade the boring login screen with an interactive murmuration of birds 🐦
+A Craft CMS plugin to upgrade the boring login screen with an interactive [murmuration](https://en.wikipedia.org/wiki/Starling#Behaviour) of birds 🐦
 
 <img src="./docs/resources/murmurations.png">
 
