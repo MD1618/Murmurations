@@ -9,7 +9,7 @@ let last = performance.now();
 let raycaster, computeVelocity, computePosition, effectController;
 let pointer;
 
-const BIRDS = 2000;
+const BIRDS = 4000;
 const SPEED_LIMIT = 9.0;
 
 // detect if browser is firefox
@@ -334,11 +334,12 @@ function init() {
 
         });
 
-        const centerPull = isFirefox ? float(3.0) : float(6.0);
+        const centerPull = isFirefox ? float(3.0) : float(10.0);
 
         // Attract flocks to center
         const dirToCenter = position.toVar();
-        dirToCenter.y.mulAssign(3.5);
+        dirToCenter.y.mulAssign(1.3);
+        dirToCenter.z.mulAssign(1.3);
         velocity.subAssign(normalize(dirToCenter).mul(deltaTime).mul(centerPull));
 
         Loop({ start: uint(0), end: uint(BIRDS), type: 'uint', condition: '<' }, ({ i }) => {
@@ -484,6 +485,7 @@ function render() {
     renderer.compute(computePosition);
     renderer.render(scene, camera);
 
+    pointer.x = 1000;
 }
 
 
