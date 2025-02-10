@@ -18,10 +18,12 @@ header {
 main {
     position: relative;
     z-index: 10;
+    pointer-events: none;
 }
 
 .login-form-container {
     background-color: #f3f7fcee !important;
+    pointer-events: auto;
 }
 
 .pane.secondary {
