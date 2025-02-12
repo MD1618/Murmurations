@@ -29,7 +29,7 @@ I have changed the original code to make the birds begin in a more pleasing way.
 
 ## Requirements
 
-This plugin requires Craft CMS 5.6.0 or later, and PHP 8.2 or later.
+This plugin requires Craft CMS 5.0.0 or later, and PHP 8.2 or later.
 
 ## Installation
 
