@@ -39,8 +39,6 @@ Plugin store installation to be added when it gets completed.
 
 #### With Composer
 
-Open your terminal and run the following commands:
-
 First add the repository to your composer.json file:
 
 ```json
