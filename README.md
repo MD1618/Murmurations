@@ -23,6 +23,8 @@ Because WebGPU is still in development, this plugin is experimental and may not 
 
 This should improve soon.
 
+[Browser Support - Can I Use WebGPU?](https://caniuse.com/webgpu)
+
 The original work is under a MIT license I believe and this plugin will be free to use.
 
 I have changed the original code to make the birds begin in a more pleasing way.
