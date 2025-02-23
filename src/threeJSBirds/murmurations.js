@@ -2,7 +2,6 @@ import WebGL from 'three/addons/capabilities/WebGL.js';
 import * as THREE from 'three/webgpu';
 import { uniform, color, varying, vec4, add, sub, max, dot, sin, mat3, uint, negate, attributeArray, cameraProjectionMatrix, cameraViewMatrix, positionLocal, modelWorldMatrix, sqrt, attribute, property, float, Fn, If, cos, Loop, Continue, normalize, instanceIndex, length } from 'three/tsl';
 
-
 let container;
 let camera, scene, renderer;
 let last = performance.now();
@@ -12,17 +11,12 @@ let pointer;
 const BIRDS = 4000;
 const SPEED_LIMIT = 9.0;
 
-// detect if browser is firefox
-
+// Detect if browser is Firefox
 const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-
-
 
 // Custom Geometry - using 3 triangles each. No normals currently.
 class BirdGeometry extends THREE.BufferGeometry {
-
     constructor() {
-
         super();
 
         const trianglesPerBird = 3;
@@ -40,76 +34,62 @@ class BirdGeometry extends THREE.BufferGeometry {
         let v = 0;
 
         function verts_push() {
-
             for (let i = 0; i < arguments.length; i++) {
-
                 vertices.array[v++] = arguments[i];
-
             }
-
         }
 
         const wingsSpan = 20;
 
         for (let f = 0; f < BIRDS; f++) {
-
             // Body
             verts_push(
-                0, 0, - 20,
-                0, - 8, 10,
+                0, 0, -20,
+                0, -8, 10,
                 0, 0, 30
             );
 
             // Wings
             verts_push(
-                0, 0, - 15,
-                - wingsSpan, 0, 5,
+                0, 0, -15,
+                -wingsSpan, 0, 5,
                 0, 0, 15
             );
 
             verts_push(
                 0, 0, 15,
                 wingsSpan, 0, 5,
-                0, 0, - 15
+                0, 0, -15
             );
-
         }
 
         for (let v = 0; v < triangles * 3; v++) {
-
-            const triangleIndex = ~ ~(v / 3);
-            const birdIndex = ~ ~(triangleIndex / trianglesPerBird);
+            const triangleIndex = ~~(v / 3);
+            const birdIndex = ~~(triangleIndex / trianglesPerBird);
 
             references.array[v] = birdIndex;
-
             birdVertex.array[v] = v % 9;
-
         }
 
         this.scale(0.2, 0.2, 0.2);
-
     }
-
 }
 
 function init() {
-
     container = document.createElement('div');
     container.setAttribute('id', 'murmurations-canvas');
     document.body.appendChild(container);
 
     camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 5000);
-    camera.position.z = 1000;
+    camera.position.z = 900;
 
     scene = new THREE.Scene();
 
     // Pointer
-
     pointer = new THREE.Vector2(1000, 1000);
     raycaster = new THREE.Raycaster();
 
-    //
-
+    // Renderer
     renderer = new THREE.WebGPURenderer({ antialias: true, forceWebGL: false });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -117,10 +97,7 @@ function init() {
     renderer.setAnimationLoop(render);
     container.appendChild(renderer.domElement);
 
-
-
     // Initialize position, velocity, and phase values
-
     const positionArray = new Float32Array(BIRDS * 3);
     const velocityArray = new Float32Array(BIRDS * 3);
     const phaseArray = new Float32Array(BIRDS);
@@ -135,81 +112,70 @@ function init() {
     const size = 1;
 
     for (let i = 0; i < BIRDS; i++) {
-        if (i < BIRDSQuarter) {
-            posX = (-window.innerWidth * 0.3) + (-window.innerWidth * 0.5) * Math.random();
-            posY = (Math.sin(posX * 0.5) + Math.sin(posZ * 0.5)) * 500;
-            posZ = (Math.sin(posX * 0.5) + Math.sin(posY * 0.5)) * 500;
-            velX = (Math.random() + 1);
-            velY = (Math.random() - 1);
-            velZ = (Math.random() - 1);
-
-        } else if (i < BIRDSQuarter * 2) {
-
-            posX = (-window.innerWidth * 0.3) + (-window.innerWidth * 0.5) * Math.random();
-            posY = (Math.sin(posX * 0.5) + Math.sin(posZ * 0.5)) * 500;
-            posZ = (Math.sin(posX * 0.5) + Math.sin(posY * 0.5));
-            velX = (Math.random() + 1);
-            velY = (Math.random() - 1);
-            velZ = (Math.random() - 1);
-
-        } else if (i < BIRDSQuarter * 3) {
-
-            posX = (window.innerWidth * 0.3) + (window.innerWidth * 0.5) * Math.random();
-            posY = (Math.sin(posX * 0.5) + Math.sin(posZ * 0.5)) * 500;
-            posZ = (Math.sin(posX * 0.5) + Math.sin(posY * 0.5)) * 500;
-            velX = (Math.random() - 1);
-            velY = (Math.random() - 1);
-            velZ = (Math.random() - 1);
-
+        let swarmCenterX;
+        if (i < BIRDS / 3) {
+            swarmCenterX = -200; // First swarm at -200
+        } else if (i < (2 * BIRDS / 3)) {
+            swarmCenterX = 0;   // Second swarm at center (0)
         } else {
-
-            posX = (window.innerWidth * 0.3) + (window.innerWidth * 0.5) * Math.random();
-            posY = (Math.sin(posX * 0.5) + Math.sin(posZ * 0.5)) * 500;
-            posZ = (Math.sin(posX * 0.5) + Math.sin(posY * 0.5));
-            velX = (Math.random() - 1);
-            velY = (Math.random() - 1);
-            velZ = (Math.random() - 1);
-
+            swarmCenterX = 200;  // Third swarm at +200
         }
+        const radius = 100 + Math.random() * 50;
+
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(2 * Math.random() - 1);
+        const r = Math.cbrt(Math.random()) * radius;
+
+        posX = swarmCenterX + r * Math.sin(phi) * Math.cos(theta);
+        posY = r * Math.sin(phi) * Math.sin(theta);
+        posZ = r * Math.cos(phi);
+
+        const turbulenceScale = 10;
+        posX += (Math.random() - 0.5) * turbulenceScale;
+        posY += (Math.random() - 0.5) * turbulenceScale;
+        posZ += (Math.random() - 0.5) * turbulenceScale;
+
+        const distanceFromOrigin = Math.sqrt(swarmCenterX * swarmCenterX);
+        const orbitSpeed = 2 + Math.random() * 2;
+
+        const radialX = posX / (distanceFromOrigin || 1);
+        const radialZ = posZ / (distanceFromOrigin || 1);
+        velX = -radialZ * orbitSpeed;
+        velZ = radialX * orbitSpeed;
+        velY = (Math.random() - 0.5) * 2;
 
         positionArray[i * 3 + 0] = posX;
         positionArray[i * 3 + 1] = posY;
         positionArray[i * 3 + 2] = posZ;
 
-        velocityArray[i * 3 + 0] = velX * 10;
-        velocityArray[i * 3 + 1] = velY * 10;
-        velocityArray[i * 3 + 2] = velZ * 10;
+        velocityArray[i * 3 + 0] = velX * 5;
+        velocityArray[i * 3 + 1] = velY * 5;
+        velocityArray[i * 3 + 2] = velZ * 5;
 
-        phaseArray[i] = 1;
+        phaseArray[i] = Math.random() * 62.83;
     }
-
-    // Labels applied to storage nodes and uniform nodes are reflected within the shader output,
-    // and are useful for debugging purposes.
 
     const positionStorage = attributeArray(positionArray, 'vec3').label('positionStorage');
     const velocityStorage = attributeArray(velocityArray, 'vec3').label('velocityStorage');
     const phaseStorage = attributeArray(phaseArray, 'float').label('phaseStorage');
-
-    // The Pixel Buffer Object (PBO) is required to get the GPU computed data in the WebGL2 fallback.
 
     positionStorage.setPBO(true);
     velocityStorage.setPBO(true);
     phaseStorage.setPBO(true);
 
     effectController = {
-        separation: uniform(15.0).label('separation'),
+        separation: uniform(12.0).label('separation'),
         alignment: uniform(20.0).label('alignment'),
-        cohesion: uniform(20.0).label('cohesion'),
+        cohesion: uniform(24.0).label('cohesion'),
         freedom: uniform(0.3).label('freedom'),
         now: uniform(0.0),
         deltaTime: uniform(0.0).label('deltaTime'),
         rayOrigin: uniform(new THREE.Vector3()).label('rayOrigin'),
         rayDirection: uniform(new THREE.Vector3()).label('rayDirection'),
+        startTime: uniform(performance.now() / 1000) // Start time in seconds
     };
 
-    // Define Uniforms. Uniforms only need to be defined once rather than per shader.
     if (!WebGL.isWebGL2Available()) {
-
         effectController = {
             separation: uniform(35.0).label('separation'),
             alignment: uniform(20.0).label('alignment'),
@@ -219,23 +185,33 @@ function init() {
             deltaTime: uniform(0.0).label('deltaTime'),
             rayOrigin: uniform(new THREE.Vector3()).label('rayOrigin'),
             rayDirection: uniform(new THREE.Vector3()).label('rayDirection'),
+            startTime: uniform(performance.now() / 1000)
         };
     }
 
-
-    // Create geometry
-
+    // Create geometry and material
     const birdGeometry = new BirdGeometry();
     const birdMaterial = new THREE.NodeMaterial();
     birdMaterial.colorNode = color(0x72767a);
     birdMaterial.transparent = true;
-    birdMaterial.opacity = 0;
 
+    birdMaterial.fragmentNode = Fn(() => {
+        const reference = attribute('reference');
+        const startTime = effectController.startTime;
+        const now = effectController.now.div(1000);
 
-    // Animate bird mesh within vertex shader, then apply position offset to vertices.
+        // Pseudo-random fade delay based on bird index
+        const randomSeed = sin(reference.toFloat().mul(1)).mul(0.5).add(0.5); // Range [0, 1]
+        const fadeDelay = randomSeed.mul(3);
+        const fadeDuration = float(2.0);
+        const elapsed = now.sub(startTime).sub(fadeDelay).max(0);
+        const opacity = elapsed.div(fadeDuration).min(1.0);
 
+        return vec4(birdMaterial.colorNode, opacity);
+    })();
+
+    // Vertex shader animation
     const birdVertexTSL = Fn(() => {
-
         const reference = attribute('reference');
         const birdVertex = attribute('birdVertex');
 
@@ -244,15 +220,12 @@ function init() {
         const newVelocity = normalize(velocityStorage.element(reference)).toVar();
 
         If(birdVertex.equal(4).or(birdVertex.equal(7)), () => {
-
-            // flap wings
             position.y = sin(newPhase).mul(3.0);
-
         });
 
         const newPosition = modelWorldMatrix.mul(position);
 
-        newVelocity.z.mulAssign(- 1.0);
+        newVelocity.z.mulAssign(-1.0);
         const xz = length(newVelocity.xz);
         const xyz = float(1.0);
         const x = sqrt((newVelocity.y.mul(newVelocity.y)).oneMinus());
@@ -263,7 +236,6 @@ function init() {
         const cosrz = x.div(xyz);
         const sinrz = newVelocity.y.div(xyz).toVar();
 
-        // Nodes must be negated with negate(). Using '-', their values will resolve to NaN.
         const maty = mat3(
             cosry, 0, negate(sinry),
             0, 1, 0,
@@ -280,7 +252,6 @@ function init() {
         finalVert.addAssign(positionStorage.element(reference));
 
         return cameraProjectionMatrix.mul(cameraViewMatrix).mul(finalVert);
-
     });
 
     birdMaterial.vertexNode = birdVertexTSL();
@@ -292,17 +263,12 @@ function init() {
     birdMesh.frustumCulled = false;
     birdMesh.updateMatrix();
 
-    // Define GPU Compute shaders.
-    // Shaders are computationally identical to their GLSL counterparts outside of texture destructuring.
-
+    // Define GPU Compute shaders
     computeVelocity = Fn(() => {
-
-        // Define consts
         const PI = float(3.141592653589793);
         const PI_2 = PI.mul(2.0);
         const limit = property('float', 'limit').assign(SPEED_LIMIT);
 
-        // Destructure uniforms
         const { alignment, separation, cohesion, deltaTime, rayOrigin, rayDirection } = effectController;
 
         const zoneRadius = separation.add(alignment).add(cohesion).toConst();
@@ -310,12 +276,10 @@ function init() {
         const alignmentThresh = (separation.add(alignment)).div(zoneRadius).toConst();
         const zoneRadiusSq = zoneRadius.mul(zoneRadius).toConst();
 
-        // Cache current bird's position and velocity outside the loop
         const birdIndex = instanceIndex.toConst('birdIndex');
         const position = positionStorage.element(birdIndex).toVar();
         const velocity = velocityStorage.element(birdIndex).toVar();
 
-        // Add influence of pointer position to velocity using cached position
         const directionToRay = rayOrigin.sub(position).toConst();
         const projectionLength = dot(directionToRay, rayDirection).toConst();
         const closestPoint = rayOrigin.sub(rayDirection.mul(projectionLength)).toConst();
@@ -327,63 +291,46 @@ function init() {
         const rayRadiusSq = rayRadius.mul(rayRadius).toConst();
 
         If(distanceToClosestPointSq.lessThan(rayRadiusSq), () => {
-
             const velocityAdjust = (distanceToClosestPointSq.div(rayRadiusSq).sub(1.0)).mul(deltaTime).mul(100.0);
             velocity.addAssign(normalize(directionToClosestPoint).mul(velocityAdjust));
             limit.addAssign(5.0);
-
         });
 
         const centerPull = isFirefox ? float(3.0) : float(10.0);
-
-        // Attract flocks to center
         const dirToCenter = position.toVar();
         dirToCenter.y.mulAssign(1.3);
         dirToCenter.z.mulAssign(1.3);
-        velocity.subAssign(normalize(dirToCenter).mul(deltaTime).mul(centerPull));
+        const asymmetryFactor = sin(position.x.add(position.z).mul(0.1)).mul(0.5);
+        velocity.subAssign(normalize(dirToCenter).mul(deltaTime).mul(centerPull).mul(float(1.0).add(asymmetryFactor)));
+
+        const timeOscillation = sin(birdIndex.toFloat().mul(0.1).add(deltaTime.mul(0.5))).mul(0.06);
+        velocity.y.addAssign(timeOscillation);
 
         Loop({ start: uint(0), end: uint(BIRDS), type: 'uint', condition: '<' }, ({ i }) => {
-
             If(i.equal(birdIndex), () => {
-
                 Continue();
-
             });
-
-            // Cache bird's position and velocity
 
             const birdPosition = positionStorage.element(i);
             const dirToBird = birdPosition.sub(position);
             const distToBird = length(dirToBird);
 
             If(distToBird.lessThan(0.0001), () => {
-
                 Continue();
-
             });
 
             const distToBirdSq = distToBird.mul(distToBird);
 
-            // Don't apply any changes to velocity if changes if the bird is outsize the zone's radius.
             If(distToBirdSq.greaterThan(zoneRadiusSq), () => {
-
                 Continue();
-
             });
-
-            // Determine which threshold the bird is flying within and adjust its velocity accordingly
 
             const percent = distToBirdSq.div(zoneRadiusSq);
 
             If(percent.lessThan(separationThresh), () => {
-
-                // Separation - Move apart for comfort
                 const velocityAdjust = (separationThresh.div(percent).sub(1.0)).mul(deltaTime);
                 velocity.subAssign(normalize(dirToBird).mul(velocityAdjust));
-
             }).ElseIf(percent.lessThan(alignmentThresh), () => {
-
-                // Alignment - fly the same direction
                 const threshDelta = alignmentThresh.sub(separationThresh);
                 const adjustedPercent = (percent.sub(separationThresh)).div(threshDelta);
                 const birdVelocity = velocityStorage.element(i);
@@ -392,38 +339,34 @@ function init() {
                 const cosRangeAdjust = float(0.5).sub(cosRange.mul(0.5)).add(0.7);
                 const velocityAdjust = cosRangeAdjust.mul(deltaTime);
                 velocity.addAssign(normalize(birdVelocity).mul(velocityAdjust));
-
             }).Else(() => {
-
-                // Attraction / Cohesion - move closer
                 const threshDelta = alignmentThresh.oneMinus();
                 const adjustedPercent = threshDelta.equal(0.0).select(1.0, (percent.sub(alignmentThresh)).div(threshDelta));
 
                 const cosRange = cos(adjustedPercent.mul(PI_2));
-                const adj1 = cosRange.mul(- 0.5);
+                const adj1 = cosRange.mul(-0.5);
                 const adj2 = adj1.add(0.5);
                 const adj3 = float(0.5).sub(adj2);
 
                 const velocityAdjust = adj3.mul(deltaTime);
                 velocity.addAssign(normalize(dirToBird).mul(velocityAdjust));
-
             });
-
         });
+
+        const noiseFactor = float(0.005);
+        const randomX = sin(birdIndex.toFloat().mul(4.0).add(deltaTime)).mul(noiseFactor);
+        const randomY = cos(birdIndex.toFloat().mul(4.0).add(deltaTime)).mul(noiseFactor);
+        velocity.x.addAssign(randomX);
+        velocity.y.addAssign(randomY);
 
         If(length(velocity).greaterThan(limit), () => {
-
             velocity.assign(normalize(velocity).mul(limit));
-
         });
 
-        // Write back the final velocity to storage
         velocityStorage.element(birdIndex).assign(velocity);
-
     })().compute(BIRDS);
 
     computePosition = Fn(() => {
-
         const { deltaTime } = effectController;
         positionStorage.element(instanceIndex).addAssign(velocityStorage.element(instanceIndex).mul(deltaTime).mul(15.0));
 
@@ -432,7 +375,6 @@ function init() {
 
         const modValue = phase.add(deltaTime).add(length(velocity.xz).mul(deltaTime).mul(3.0)).add(max(velocity.y, 0.0).mul(deltaTime).mul(6.0));
         phaseStorage.element(instanceIndex).assign(modValue.mod(62.83));
-
     })().compute(BIRDS);
 
     scene.add(birdMesh);
@@ -440,43 +382,31 @@ function init() {
     container.style.touchAction = 'none';
     container.addEventListener('pointermove', onPointerMove);
 
-
     window.addEventListener('resize', onWindowResize);
-
-    gsap.to(birdMaterial, { opacity: 1, duration: 5 });
-
-
 }
 
 function onWindowResize() {
-
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
-
     renderer.setSize(window.innerWidth, window.innerHeight);
-
 }
 
 function onPointerMove(event) {
-
     if (event.isPrimary === false) return;
-
     pointer.x = (event.clientX / window.innerWidth) * 2.0 - 1.0;
     pointer.y = 1.0 - (event.clientY / window.innerHeight) * 2.0;
-
 }
 
 function render() {
-
     const now = performance.now();
     let deltaTime = (now - last) / 1000;
 
-    if (deltaTime > 1) deltaTime = 1; // safety cap on large deltas
+    if (deltaTime > 1) deltaTime = 1; // Safety cap on large deltas
     last = now;
 
     raycaster.setFromCamera(pointer, camera);
 
-    effectController.now.value = now;
+    effectController.now.value = now; // In milliseconds
     effectController.deltaTime.value = deltaTime;
     effectController.rayOrigin.value.copy(raycaster.ray.origin);
     effectController.rayDirection.value.copy(raycaster.ray.direction);
@@ -488,15 +418,6 @@ function render() {
     pointer.x = 1000;
 }
 
-
 if (WebGL.isWebGL2Available()) {
-
-    console.log('WebGL2 Available');
     init();
-
-
-} else {
-
-    console.log('WebGL2 Not Available');
-
 }
